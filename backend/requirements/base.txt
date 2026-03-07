@@ -10,7 +10,7 @@ django-cors-headers==4.4.0
 django-filter==24.3
 
 # Oracle Driver — OBLIGATORIO python-oracledb (no cx_Oracle)
-python-oracledb==2.3.0
+oracledb==2.3.0
 
 # Autenticación JWT
 djangorestframework-simplejwt==5.3.1
