@@ -93,7 +93,8 @@ sudo -u $USER bash -c "$PROJECT_DIR/backend/venv/bin/pip install --upgrade pip"
 sudo -u $USER bash -c "$PROJECT_DIR/backend/venv/bin/pip install -r $PROJECT_DIR/backend/requirements/prod.txt"
 sudo -u $USER bash -c "$PROJECT_DIR/backend/venv/bin/pip install gunicorn"
 
-# Recolección de archivos estáticos de Django
+# Crear carpeta de logs y recolección de archivos estáticos de Django
+sudo -u $USER bash -c "mkdir -p $PROJECT_DIR/backend/logs"
 sudo -u $USER bash -c "cd $PROJECT_DIR/backend && $PROJECT_DIR/backend/venv/bin/python manage.py collectstatic --noinput"
 
 # 8. Configurar Frontend (React)
