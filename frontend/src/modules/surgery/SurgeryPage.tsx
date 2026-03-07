@@ -71,22 +71,22 @@ interface Paciente {
 // ────────────────────────────────────────────────────────────
 const PRIORIDAD_COLORS: Record<string, string> = {
   EMERGENCIA: 'bg-red-100 text-red-800 border border-red-200',
-  URGENTE:    'bg-orange-100 text-orange-800 border border-orange-200',
-  ELECTIVA:   'bg-blue-100 text-blue-800 border border-blue-200',
+  URGENTE: 'bg-orange-100 text-orange-800 border border-orange-200',
+  ELECTIVA: 'bg-blue-100 text-blue-800 border border-blue-200',
 }
 
 const PRIORIDAD_DOT: Record<string, string> = {
   EMERGENCIA: 'bg-red-500',
-  URGENTE:    'bg-orange-500',
-  ELECTIVA:   'bg-blue-500',
+  URGENTE: 'bg-orange-500',
+  ELECTIVA: 'bg-blue-500',
 }
 
 const ESTADO_COLORS: Record<string, string> = {
   PROGRAMADA: 'bg-sky-100 text-sky-800',
-  EN_CURSO:   'bg-amber-100 text-amber-800',
+  EN_CURSO: 'bg-amber-100 text-amber-800',
   COMPLETADA: 'bg-green-100 text-green-800',
   SUSPENDIDA: 'bg-orange-100 text-orange-800',
-  CANCELADA:  'bg-gray-100 text-gray-600',
+  CANCELADA: 'bg-gray-100 text-gray-600',
 }
 
 // ────────────────────────────────────────────────────────────
@@ -94,27 +94,27 @@ const ESTADO_COLORS: Record<string, string> = {
 // ────────────────────────────────────────────────────────────
 export default function SurgeryPage() {
   // Lista
-  const [cirugias, setCirugias]         = useState<Cirugia[]>([])
-  const [total, setTotal]               = useState(0)
-  const [loading, setLoading]           = useState(false)
-  const [selected, setSelected]         = useState<Cirugia | null>(null)
+  const [cirugias, setCirugias] = useState<Cirugia[]>([])
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [selected, setSelected] = useState<Cirugia | null>(null)
 
   // Filtros
-  const [search, setSearch]             = useState('')
+  const [search, setSearch] = useState('')
   const [filtroEstado, setFiltroEstado] = useState('')
   const [filtroPrioridad, setFiltroPrioridad] = useState('')
-  const [soloActivos, setSoloActivos]   = useState(false)
+  const [soloActivos, setSoloActivos] = useState(false)
 
   // Recursos
-  const [usuarios, setUsuarios]         = useState<Usuario[]>([])
-  const [pacientes, setPacientes]       = useState<Paciente[]>([])
-  const [busquedaPac, setBusquedaPac]   = useState('')
-  const [pacSugs, setPacSugs]           = useState<Paciente[]>([])
-  const pacDebounce                     = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [usuarios, setUsuarios] = useState<Usuario[]>([])
+  const [_pacientes, _setPacientes] = useState<Paciente[]>([])
+  const [busquedaPac, setBusquedaPac] = useState('')
+  const [pacSugs, setPacSugs] = useState<Paciente[]>([])
+  const pacDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Modales
-  const [showNueva, setShowNueva]       = useState(false)
-  const [showIniciar, setShowIniciar]   = useState(false)
+  const [showNueva, setShowNueva] = useState(false)
+  const [showIniciar, setShowIniciar] = useState(false)
   const [showCompletar, setShowCompletar] = useState(false)
   const [showFinalizar, setShowFinalizar] = useState<'cancelar' | 'suspender' | null>(null)
 
@@ -133,7 +133,7 @@ export default function SurgeryPage() {
   })
   const [formMotivo, setFormMotivo] = useState({ motivo: '' })
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError]           = useState('')
+  const [error, setError] = useState('')
 
   // ────────────────────────────────────────────────────────
   // Data loading
@@ -142,10 +142,10 @@ export default function SurgeryPage() {
     setLoading(true)
     try {
       const params: Record<string, string> = {}
-      if (filtroEstado)    params.estado    = filtroEstado
+      if (filtroEstado) params.estado = filtroEstado
       if (filtroPrioridad) params.prioridad = filtroPrioridad
-      if (soloActivos)     params.activos   = '1'
-      if (search)          params.search    = search
+      if (soloActivos) params.activos = '1'
+      if (search) params.search = search
 
       const res = await api.get('/surgery/', { params })
       setCirugias(res.data.results ?? [])
@@ -161,14 +161,14 @@ export default function SurgeryPage() {
     try {
       const res = await api.get(`/surgery/${id}/`)
       setSelected(res.data)
-    } catch {/* ignore */}
+    } catch {/* ignore */ }
   }
 
   const cargarRecursos = async () => {
     try {
       const res = await api.get('/auth/usuarios/?page_size=100')
       setUsuarios(res.data.results ?? [])
-    } catch {/* ignore */}
+    } catch {/* ignore */ }
   }
 
   useEffect(() => { cargarCirugias() }, [cargarCirugias])
@@ -211,8 +211,8 @@ export default function SurgeryPage() {
     try {
       await api.post('/surgery/', {
         ...formNueva,
-        paciente:      parseInt(formNueva.paciente),
-        cirujano:      parseInt(formNueva.cirujano),
+        paciente: parseInt(formNueva.paciente),
+        cirujano: parseInt(formNueva.cirujano),
         anestesiologo: formNueva.anestesiologo ? parseInt(formNueva.anestesiologo) : null,
         duracion_est_min: formNueva.duracion_est_min ? parseInt(formNueva.duracion_est_min) : null,
       })

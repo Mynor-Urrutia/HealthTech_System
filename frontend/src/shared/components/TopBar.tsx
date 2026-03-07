@@ -1,4 +1,4 @@
-import { Menu, LogOut, User, Bell } from 'lucide-react'
+import { Menu, LogOut, Bell } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '@shared/hooks/useStore'
 import { logout } from '@store/authSlice'
 import { useNavigate } from 'react-router-dom'

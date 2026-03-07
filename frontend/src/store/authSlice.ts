@@ -16,6 +16,7 @@ export interface AuthUser {
   full_name: string
   email: string
   rol: string
+  rol_nombre: string
   hospital_id: number
   hospital_nombre: string
 }

@@ -93,26 +93,26 @@ interface PaginatedResponse {
 // Estado inicial del formulario
 // no_expediente se genera automáticamente en el backend (YYYYMMDDXXX)
 const FORM_INICIAL = {
-  primer_nombre:     '',
-  segundo_nombre:    '',
-  primer_apellido:   '',
-  segundo_apellido:  '',
-  tipo_documento:    'DPI',
-  no_documento:      '',
-  fecha_nacimiento:  '',
-  sexo:              'M',
-  estado_civil:      'SOLTERO',
-  nacionalidad:      'GUATEMALTECA',
-  tipo_paciente:     'GENERAL',
-  telefono_principal:'',
-  email:             '',
+  primer_nombre: '',
+  segundo_nombre: '',
+  primer_apellido: '',
+  segundo_apellido: '',
+  tipo_documento: 'DPI',
+  no_documento: '',
+  fecha_nacimiento: '',
+  sexo: 'M',
+  estado_civil: 'SOLTERO',
+  nacionalidad: 'GUATEMALTECA',
+  tipo_paciente: 'GENERAL',
+  telefono_principal: '',
+  email: '',
 }
 
 // Color por severidad de alergia
 const severidadColor: Record<string, string> = {
-  LEVE:         'bg-yellow-100 text-yellow-800',
-  MODERADA:     'bg-orange-100 text-orange-800',
-  SEVERA:       'bg-red-100 text-red-800',
+  LEVE: 'bg-yellow-100 text-yellow-800',
+  MODERADA: 'bg-orange-100 text-orange-800',
+  SEVERA: 'bg-red-100 text-red-800',
   ANAFILACTICA: 'bg-red-200 text-red-900 font-bold ring-1 ring-red-400',
 }
 
@@ -122,22 +122,22 @@ const severidadColor: Record<string, string> = {
 export default function PatientsPage() {
   // Estado listado
   const [pacientes, setPacientes] = useState<Paciente[]>([])
-  const [total,     setTotal]     = useState(0)
-  const [hasMore,   setHasMore]   = useState(false)
-  const [page,      setPage]      = useState(1)
-  const [search,    setSearch]    = useState('')
-  const [loading,   setLoading]   = useState(true)
+  const [total, setTotal] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
+  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [loading, setLoading] = useState(true)
   const [listError, setListError] = useState('')
 
   // Estado detalle
-  const [selected,   setSelected]   = useState<PacienteDetalle | null>(null)
+  const [selected, setSelected] = useState<PacienteDetalle | null>(null)
   const [detailLoad, setDetailLoad] = useState(false)
 
   // Modal crear
-  const [showModal,       setShowModal]       = useState(false)
-  const [form,            setForm]            = useState<typeof FORM_INICIAL>(FORM_INICIAL)
-  const [saving,          setSaving]          = useState(false)
-  const [formError,       setFormError]       = useState('')
+  const [showModal, setShowModal] = useState(false)
+  const [form, setForm] = useState<typeof FORM_INICIAL>(FORM_INICIAL)
+  const [saving, setSaving] = useState(false)
+  const [formError, setFormError] = useState('')
   const [expedienteCreado, setExpedienteCreado] = useState<string | null>(null)
 
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -152,7 +152,7 @@ export default function PatientsPage() {
       const { data } = await api.get<PaginatedResponse | Paciente[]>(`/patients/?${params}`)
 
       const results = Array.isArray(data) ? data : (data as PaginatedResponse).results
-      const count   = Array.isArray(data) ? results.length : (data as PaginatedResponse).count
+      const count = Array.isArray(data) ? results.length : (data as PaginatedResponse).count
 
       setPacientes(prev => pageNum === 1 ? results : [...prev, ...results])
       setTotal(count)
@@ -205,7 +205,7 @@ export default function PatientsPage() {
       }, 2500)
     } catch (err: unknown) {
       const axErr = err as { response?: { data?: unknown } }
-      const data  = axErr?.response?.data
+      const data = axErr?.response?.data
       if (data && typeof data === 'object') {
         const msgs = Object.entries(data as Record<string, unknown>)
           .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : String(v)}`)
@@ -377,15 +377,15 @@ export default function PatientsPage() {
                 <FichaSeccion icon={<User />} titulo="Datos Personales">
                   <FichaGrid>
                     <FichaCampo label="Fecha de nacimiento" valor={selected.fecha_nacimiento} />
-                    <FichaCampo label="Estado civil"        valor={selected.estado_civil} />
-                    <FichaCampo label="Nacionalidad"        valor={selected.nacionalidad} />
+                    <FichaCampo label="Estado civil" valor={selected.estado_civil} />
+                    <FichaCampo label="Nacionalidad" valor={selected.nacionalidad} />
                     {selected.nombre_casada && <FichaCampo label="Nombre de casada" valor={selected.nombre_casada} />}
                   </FichaGrid>
                 </FichaSeccion>
 
                 <FichaSeccion icon={<Phone />} titulo="Contacto">
                   <FichaGrid>
-                    <FichaCampo label="Teléfono"     valor={selected.telefono_principal || '—'} />
+                    <FichaCampo label="Teléfono" valor={selected.telefono_principal || '—'} />
                     {selected.telefono_alternativo && <FichaCampo label="Teléfono alt." valor={selected.telefono_alternativo} />}
                     {selected.email && <FichaCampo label="Correo" valor={selected.email} />}
                     {(selected.municipio || selected.departamento) && (
@@ -399,7 +399,7 @@ export default function PatientsPage() {
                 {(selected.aseguradora || selected.no_afiliacion) && (
                   <FichaSeccion icon={<Shield />} titulo="Cobertura / Seguro">
                     <FichaGrid>
-                      {selected.aseguradora   && <FichaCampo label="Aseguradora"    valor={selected.aseguradora} />}
+                      {selected.aseguradora && <FichaCampo label="Aseguradora" valor={selected.aseguradora} />}
                       {selected.no_afiliacion && <FichaCampo label="No. Afiliación" valor={selected.no_afiliacion} />}
                     </FichaGrid>
                   </FichaSeccion>
@@ -410,7 +410,7 @@ export default function PatientsPage() {
                     {selected.grupo_sanguineo && (
                       <FichaCampo label="Grupo / Factor Rh" valor={`${selected.grupo_sanguineo}${selected.factor_rh}`} />
                     )}
-                    {selected.peso_kg  && <FichaCampo label="Peso (kg)"  valor={String(selected.peso_kg)} />}
+                    {selected.peso_kg && <FichaCampo label="Peso (kg)" valor={String(selected.peso_kg)} />}
                     {selected.talla_cm && <FichaCampo label="Talla (cm)" valor={String(selected.talla_cm)} />}
                     {!selected.grupo_sanguineo && !selected.peso_kg && !selected.talla_cm && (
                       <p className="col-span-2 text-xs text-gray-400">Sin datos clínicos registrados</p>
@@ -436,7 +436,7 @@ export default function PatientsPage() {
                             <p className="text-sm font-semibold text-gray-800">{a.agente}</p>
                             <p className="text-xs text-gray-500">{a.tipo_alergia_display}{a.reaccion ? ` · ${a.reaccion}` : ''}</p>
                           </div>
-                          {a.verificada && <BadgeCheck className="w-4 h-4 text-green-500 flex-shrink-0" title="Verificada" />}
+                          {a.verificada && <span title="Verificada"><BadgeCheck className="w-4 h-4 text-green-500 flex-shrink-0" /></span>}
                         </div>
                       ))}
                     </div>
@@ -470,8 +470,8 @@ export default function PatientsPage() {
                   <FichaGrid>
                     <FichaCampo label="No. Expediente" valor={selected.no_expediente} />
                     <FichaCampo label="Tipo Documento" valor={selected.tipo_documento} />
-                    <FichaCampo label="No. Documento"  valor={selected.no_documento} />
-                    <FichaCampo label="Registrado el"  valor={new Date(selected.created_at).toLocaleDateString('es-GT')} />
+                    <FichaCampo label="No. Documento" valor={selected.no_documento} />
+                    <FichaCampo label="Registrado el" valor={new Date(selected.created_at).toLocaleDateString('es-GT')} />
                   </FichaGrid>
                 </FichaSeccion>
               </div>
@@ -521,46 +521,46 @@ export default function PatientsPage() {
 
               {!expedienteCreado && (
                 <>
-              <Fieldset legend="Identidad del Paciente">
-                <div className="grid grid-cols-2 gap-3">
-                  <FormInput label="Primer nombre *"   value={form.primer_nombre}    onChange={setField('primer_nombre')}    required />
-                  <FormInput label="Segundo nombre"    value={form.segundo_nombre}   onChange={setField('segundo_nombre')} />
-                  <FormInput label="Primer apellido *" value={form.primer_apellido}  onChange={setField('primer_apellido')}  required />
-                  <FormInput label="Segundo apellido"  value={form.segundo_apellido} onChange={setField('segundo_apellido')} />
-                </div>
-              </Fieldset>
+                  <Fieldset legend="Identidad del Paciente">
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormInput label="Primer nombre *" value={form.primer_nombre} onChange={setField('primer_nombre')} required />
+                      <FormInput label="Segundo nombre" value={form.segundo_nombre} onChange={setField('segundo_nombre')} />
+                      <FormInput label="Primer apellido *" value={form.primer_apellido} onChange={setField('primer_apellido')} required />
+                      <FormInput label="Segundo apellido" value={form.segundo_apellido} onChange={setField('segundo_apellido')} />
+                    </div>
+                  </Fieldset>
 
-              <Fieldset legend="Documento de Identidad">
-                {/* No. Expediente es auto-generado por el sistema (formato YYYYMMDDXXX) */}
-                <div className="grid grid-cols-2 gap-3">
-                  <FormSelect label="Tipo doc. *" value={form.tipo_documento} onChange={setField('tipo_documento')}
-                    options={[['DPI','DPI'],['PASAPORTE','Pasaporte'],['CUI','CUI'],['CEDULA','Cédula'],['OTRO','Otro']]} />
-                  <FormInput label="No. Documento *" value={form.no_documento} onChange={setField('no_documento')} required />
-                </div>
-                <p className="mt-2 text-xs text-gray-400 flex items-center gap-1">
-                  <BadgeCheck className="w-3.5 h-3.5 text-primary-400" />
-                  El No. de Expediente se genera automáticamente al guardar (formato YYYYMMDDXXX).
-                </p>
-              </Fieldset>
+                  <Fieldset legend="Documento de Identidad">
+                    {/* No. Expediente es auto-generado por el sistema (formato YYYYMMDDXXX) */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormSelect label="Tipo doc. *" value={form.tipo_documento} onChange={setField('tipo_documento')}
+                        options={[['DPI', 'DPI'], ['PASAPORTE', 'Pasaporte'], ['CUI', 'CUI'], ['CEDULA', 'Cédula'], ['OTRO', 'Otro']]} />
+                      <FormInput label="No. Documento *" value={form.no_documento} onChange={setField('no_documento')} required />
+                    </div>
+                    <p className="mt-2 text-xs text-gray-400 flex items-center gap-1">
+                      <BadgeCheck className="w-3.5 h-3.5 text-primary-400" />
+                      El No. de Expediente se genera automáticamente al guardar (formato YYYYMMDDXXX).
+                    </p>
+                  </Fieldset>
 
-              <Fieldset legend="Datos Demográficos">
-                <div className="grid grid-cols-2 gap-3">
-                  <FormInput label="Fecha de nacimiento *" value={form.fecha_nacimiento}   onChange={setField('fecha_nacimiento')} type="date" required />
-                  <FormSelect label="Sexo *"               value={form.sexo}               onChange={setField('sexo')}
-                    options={[['M','Masculino'],['F','Femenino']]} />
-                  <FormSelect label="Estado civil"         value={form.estado_civil}       onChange={setField('estado_civil')}
-                    options={[['SOLTERO','Soltero/a'],['CASADO','Casado/a'],['UNION_LIBRE','Unión libre'],['DIVORCIADO','Divorciado/a'],['VIUDO','Viudo/a']]} />
-                  <FormSelect label="Tipo de paciente"     value={form.tipo_paciente}      onChange={setField('tipo_paciente')}
-                    options={[['GENERAL','General'],['IGSS','IGSS'],['PRIVADO','Privado'],['SEGURO','Seguro médico'],['EXTERIOR','Exterior'],['OTRO','Otro']]} />
-                </div>
-              </Fieldset>
+                  <Fieldset legend="Datos Demográficos">
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormInput label="Fecha de nacimiento *" value={form.fecha_nacimiento} onChange={setField('fecha_nacimiento')} type="date" required />
+                      <FormSelect label="Sexo *" value={form.sexo} onChange={setField('sexo')}
+                        options={[['M', 'Masculino'], ['F', 'Femenino']]} />
+                      <FormSelect label="Estado civil" value={form.estado_civil} onChange={setField('estado_civil')}
+                        options={[['SOLTERO', 'Soltero/a'], ['CASADO', 'Casado/a'], ['UNION_LIBRE', 'Unión libre'], ['DIVORCIADO', 'Divorciado/a'], ['VIUDO', 'Viudo/a']]} />
+                      <FormSelect label="Tipo de paciente" value={form.tipo_paciente} onChange={setField('tipo_paciente')}
+                        options={[['GENERAL', 'General'], ['IGSS', 'IGSS'], ['PRIVADO', 'Privado'], ['SEGURO', 'Seguro médico'], ['EXTERIOR', 'Exterior'], ['OTRO', 'Otro']]} />
+                    </div>
+                  </Fieldset>
 
-              <Fieldset legend="Contacto">
-                <div className="grid grid-cols-2 gap-3">
-                  <FormInput label="Teléfono principal" value={form.telefono_principal} onChange={setField('telefono_principal')} type="tel" />
-                  <FormInput label="Correo electrónico" value={form.email}              onChange={setField('email')}              type="email" />
-                </div>
-              </Fieldset>
+                  <Fieldset legend="Contacto">
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormInput label="Teléfono principal" value={form.telefono_principal} onChange={setField('telefono_principal')} type="tel" />
+                      <FormInput label="Correo electrónico" value={form.email} onChange={setField('email')} type="email" />
+                    </div>
+                  </Fieldset>
                 </>
               )}
             </form>
