@@ -10,43 +10,43 @@ import { useAppSelector } from '../../shared/hooks/useStore'
 // Types
 // ============================================================
 interface Usuario {
-  usr_id:           number
-  username:         string
-  full_name:        string
-  email:            string
-  rol:              { rol_id: number; codigo: string; nombre: string; nivel: number }
+  usr_id: number
+  username: string
+  full_name: string
+  email: string
+  rol: { rol_id: number; codigo: string; nombre: string; nivel: number }
   hospital_nombre?: string
-  activo:           boolean
+  activo: boolean
   cuenta_bloqueada: boolean
-  ultimo_login?:    string
+  ultimo_login?: string
 }
 
 interface Hospital {
   hospital_id: number
-  codigo:      string
-  nombre:      string
-  email?:      string
-  activo:      boolean
+  codigo: string
+  nombre: string
+  email?: string
+  activo: boolean
 }
 
 interface AuditoriaItem {
-  auditoria_id:      number
-  tipo_evento:       string
-  modulo:            string
-  accion?:           string
-  exitoso:           boolean
+  auditoria_id: number
+  tipo_evento: string
+  modulo: string
+  accion?: string
+  exitoso: boolean
   username_intento?: string
-  ip_origen?:        string
-  created_at:        string
-  mensaje_error?:    string
+  ip_origen?: string
+  created_at: string
+  mensaje_error?: string
 }
 
 interface Rol {
-  rol_id:  number
-  codigo:  string
-  nombre:  string
-  nivel:   number
-  activo:  boolean
+  rol_id: number
+  codigo: string
+  nombre: string
+  nivel: number
+  activo: boolean
 }
 
 type Tab = 'usuarios' | 'hospitales' | 'auditoria'
@@ -60,30 +60,30 @@ function fmtDate(dt: string): string {
 }
 
 const ROL_STYLE: Record<string, string> = {
-  SUPER_ADMIN:      'bg-red-100 text-red-800',
-  ADMIN_HOSPITAL:   'bg-orange-100 text-orange-800',
-  MEDICO:           'bg-blue-100 text-blue-800',
-  ENFERMERO:        'bg-teal-100 text-teal-800',
-  FARMACEUTICO:     'bg-green-100 text-green-800',
-  LABORATORISTA:    'bg-cyan-100 text-cyan-800',
-  BODEGUERO:        'bg-amber-100 text-amber-800',
-  ADMINISTRATIVO:   'bg-purple-100 text-purple-800',
-  AUDITOR:          'bg-gray-100 text-gray-700',
+  SUPER_ADMIN: 'bg-red-100 text-red-800',
+  ADMIN_HOSPITAL: 'bg-orange-100 text-orange-800',
+  MEDICO: 'bg-blue-100 text-blue-800',
+  ENFERMERO: 'bg-teal-100 text-teal-800',
+  FARMACEUTICO: 'bg-green-100 text-green-800',
+  LABORATORISTA: 'bg-cyan-100 text-cyan-800',
+  BODEGUERO: 'bg-amber-100 text-amber-800',
+  ADMINISTRATIVO: 'bg-purple-100 text-purple-800',
+  AUDITOR: 'bg-gray-100 text-gray-700',
 }
 
 const EVENTO_STYLE: Record<string, string> = {
-  LOGIN_OK:        'bg-green-100 text-green-800',
-  LOGIN_FAIL:      'bg-red-100 text-red-800',
-  LOGOUT:          'bg-gray-100 text-gray-700',
-  PHI_ACCESS:      'bg-blue-100 text-blue-800',
-  PHI_CREATE:      'bg-indigo-100 text-indigo-800',
-  PHI_UPDATE:      'bg-yellow-100 text-yellow-800',
-  PHI_DELETE:      'bg-red-100 text-red-800',
+  LOGIN_OK: 'bg-green-100 text-green-800',
+  LOGIN_FAIL: 'bg-red-100 text-red-800',
+  LOGOUT: 'bg-gray-100 text-gray-700',
+  PHI_ACCESS: 'bg-blue-100 text-blue-800',
+  PHI_CREATE: 'bg-indigo-100 text-indigo-800',
+  PHI_UPDATE: 'bg-yellow-100 text-yellow-800',
+  PHI_DELETE: 'bg-red-100 text-red-800',
   PASSWORD_CHANGE: 'bg-purple-100 text-purple-800',
-  ACCOUNT_LOCKED:  'bg-red-200 text-red-900',
-  ADMIN_ACTION:    'bg-orange-100 text-orange-800',
-  TOKEN_REFRESH:   'bg-gray-100 text-gray-600',
-  EXPORT:          'bg-teal-100 text-teal-800',
+  ACCOUNT_LOCKED: 'bg-red-200 text-red-900',
+  ADMIN_ACTION: 'bg-orange-100 text-orange-800',
+  TOKEN_REFRESH: 'bg-gray-100 text-gray-600',
+  EXPORT: 'bg-teal-100 text-teal-800',
 }
 
 // ============================================================
@@ -94,33 +94,54 @@ export default function SecurityPage() {
   const [tab, setTab] = useState<Tab>('usuarios')
 
   // ── Usuarios ──
-  const [usuarios, setUsuarios]         = useState<Usuario[]>([])
-  const [usuTotal, setUsuTotal]         = useState(0)
-  const [usuLoading, setUsuLoading]     = useState(false)
-  const [usuSearch, setUsuSearch]       = useState('')
+  const [usuarios, setUsuarios] = useState<Usuario[]>([])
+  const [usuTotal, setUsuTotal] = useState(0)
+  const [usuLoading, setUsuLoading] = useState(false)
+  const [usuSearch, setUsuSearch] = useState('')
   const [usuRolFilter, setUsuRolFilter] = useState('')
-  const [roles, setRoles]               = useState<Rol[]>([])
+  const [roles, setRoles] = useState<Rol[]>([])
 
   // ── Hospitales ──
-  const [hospitales, setHospitales]     = useState<Hospital[]>([])
-  const [hospLoading, setHospLoading]   = useState(false)
+  const [hospitales, setHospitales] = useState<Hospital[]>([])
+  const [hospLoading, setHospLoading] = useState(false)
 
   // ── Auditoría ──
-  const [auditoria, setAuditoria]       = useState<AuditoriaItem[]>([])
-  const [audTotal, setAudTotal]         = useState(0)
-  const [audLoading, setAudLoading]     = useState(false)
-  const [audPage, setAudPage]           = useState(1)
-  const [audEvento, setAudEvento]       = useState('')
-  const [audExitoso, setAudExitoso]     = useState('')
+  const [auditoria, setAuditoria] = useState<AuditoriaItem[]>([])
+  const [audTotal, setAudTotal] = useState(0)
+  const [audLoading, setAudLoading] = useState(false)
+  const [audPage, setAudPage] = useState(1)
+  const [audEvento, setAudEvento] = useState('')
+  const [audExitoso, setAudExitoso] = useState('')
   const [audFechaDesde, setAudFechaDesde] = useState('')
   const [audFechaHasta, setAudFechaHasta] = useState('')
-  const [exporting, setExporting]       = useState(false)
+  const [exporting, setExporting] = useState(false)
 
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // ── Feedback ──
   const [actionMsg, setActionMsg] = useState('')
   const [actionErr, setActionErr] = useState('')
+
+  // ── Modal Crear Usuario ──
+  const FORM_CREAR_INIT = {
+    username: '', password: '', primer_nombre: '', segundo_nombre: '',
+    primer_apellido: '', segundo_apellido: '', email: '', telefono: '',
+    tipo_personal: 'MEDICO', especialidad: '', no_colegiado: '', rol_id: '',
+  }
+  const [showCrear, setShowCrear] = useState(false)
+  const [formCrear, setFormCrear] = useState(FORM_CREAR_INIT)
+  const [crearLoading, setCrearLoading] = useState(false)
+  const [crearError, setCrearError] = useState('')
+
+  // ── Modal Editar Usuario ──
+  const [showEditar, setShowEditar] = useState(false)
+  const [editUser, setEditUser] = useState<Usuario | null>(null)
+  const [formEditar, setFormEditar] = useState({
+    primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '',
+    email: '', telefono: '', tipo_personal: '', especialidad: '', no_colegiado: '', rol_id: '',
+  })
+  const [editarLoading, setEditarLoading] = useState(false)
+  const [editarError, setEditarError] = useState('')
 
   // ============================================================
   // Fetch functions
@@ -129,8 +150,8 @@ export default function SecurityPage() {
     setUsuLoading(true)
     try {
       const params: Record<string, string | number> = { page_size: 20 }
-      if (usuSearch)    params.search   = usuSearch
-      if (usuRolFilter) params.rol      = usuRolFilter
+      if (usuSearch) params.search = usuSearch
+      if (usuRolFilter) params.rol = usuRolFilter
       const r = await api.get('/auth/usuarios/', { params })
       setUsuTotal(r.data.count ?? 0)
       setUsuarios(r.data.results ?? [])
@@ -156,10 +177,10 @@ export default function SecurityPage() {
     setAudLoading(true)
     try {
       const params: Record<string, string | number> = { page_size: 20, page: audPage }
-      if (audEvento)     params.tipo_evento  = audEvento
-      if (audExitoso)    params.exitoso      = audExitoso
-      if (audFechaDesde) params.fecha_desde  = audFechaDesde
-      if (audFechaHasta) params.fecha_hasta  = audFechaHasta
+      if (audEvento) params.tipo_evento = audEvento
+      if (audExitoso) params.exitoso = audExitoso
+      if (audFechaDesde) params.fecha_desde = audFechaDesde
+      if (audFechaHasta) params.fecha_hasta = audFechaHasta
       const r = await api.get('/auth/auditoria/', { params })
       setAudTotal(r.data.count ?? 0)
       setAuditoria(r.data.results ?? [])
@@ -170,10 +191,10 @@ export default function SecurityPage() {
     setExporting(true)
     try {
       const params: Record<string, string> = {}
-      if (audEvento)     params.tipo_evento  = audEvento
-      if (audExitoso)    params.exitoso      = audExitoso
-      if (audFechaDesde) params.fecha_desde  = audFechaDesde
-      if (audFechaHasta) params.fecha_hasta  = audFechaHasta
+      if (audEvento) params.tipo_evento = audEvento
+      if (audExitoso) params.exitoso = audExitoso
+      if (audFechaDesde) params.fecha_desde = audFechaDesde
+      if (audFechaHasta) params.fecha_hasta = audFechaHasta
       // Use axios to get the blob with auth headers
       const r = await api.get('/auth/auditoria/reporte/', {
         params,
@@ -195,9 +216,9 @@ export default function SecurityPage() {
   }
 
   useEffect(() => { fetchRoles() }, []) // eslint-disable-line
-  useEffect(() => { if (tab === 'usuarios')   fetchUsuarios() },  [tab, usuSearch, usuRolFilter]) // eslint-disable-line
+  useEffect(() => { if (tab === 'usuarios') fetchUsuarios() }, [tab, usuSearch, usuRolFilter]) // eslint-disable-line
   useEffect(() => { if (tab === 'hospitales') fetchHospitales() }, [tab]) // eslint-disable-line
-  useEffect(() => { if (tab === 'auditoria')  fetchAuditoria() },  [tab, audPage, audEvento, audExitoso, audFechaDesde, audFechaHasta]) // eslint-disable-line
+  useEffect(() => { if (tab === 'auditoria') fetchAuditoria() }, [tab, audPage, audEvento, audExitoso, audFechaDesde, audFechaHasta]) // eslint-disable-line
 
   // ── Debounce search ──
   function handleUsuSearch(val: string) {
@@ -222,6 +243,84 @@ export default function SecurityPage() {
       setActionMsg(`Usuario "${username}" ${activo ? 'desactivado' : 'activado'}.`)
       fetchUsuarios()
     } catch { setActionErr('Error al cambiar estado del usuario.') }
+  }
+
+  // ── Crear Usuario ──
+  async function handleCrearUsuario(e: React.FormEvent) {
+    e.preventDefault()
+    setCrearLoading(true); setCrearError('')
+    try {
+      await api.post('/auth/usuarios/', {
+        ...formCrear,
+        rol_id: parseInt(formCrear.rol_id),
+      })
+      setShowCrear(false)
+      setFormCrear(FORM_CREAR_INIT)
+      setActionMsg('Usuario creado exitosamente.')
+      fetchUsuarios()
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: Record<string, unknown> } }
+      const data = e.response?.data
+      if (data && typeof data === 'object') {
+        const msgs = Object.entries(data)
+          .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : String(v)}`)
+          .join(' · ')
+        setCrearError(msgs)
+      } else {
+        setCrearError('Error al crear usuario.')
+      }
+    } finally { setCrearLoading(false) }
+  }
+
+  // ── Abrir modal Editar ──
+  async function openEditar(userId: number) {
+    setEditarError(''); setEditarLoading(false)
+    try {
+      const r = await api.get(`/auth/usuarios/${userId}/`)
+      const u = r.data
+      setEditUser(u)
+      setFormEditar({
+        primer_nombre: u.primer_nombre || '',
+        segundo_nombre: u.segundo_nombre || '',
+        primer_apellido: u.primer_apellido || '',
+        segundo_apellido: u.segundo_apellido || '',
+        email: u.email || '',
+        telefono: u.telefono || '',
+        tipo_personal: u.tipo_personal || '',
+        especialidad: u.especialidad || '',
+        no_colegiado: u.no_colegiado || '',
+        rol_id: String(u.rol?.rol_id || ''),
+      })
+      setShowEditar(true)
+    } catch { setActionErr('Error al cargar datos del usuario.') }
+  }
+
+  // ── Guardar edición ──
+  async function handleEditarUsuario(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editUser) return
+    setEditarLoading(true); setEditarError('')
+    try {
+      await api.patch(`/auth/usuarios/${editUser.usr_id}/`, {
+        ...formEditar,
+        rol_id: parseInt(formEditar.rol_id),
+      })
+      setShowEditar(false)
+      setEditUser(null)
+      setActionMsg('Usuario actualizado exitosamente.')
+      fetchUsuarios()
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: Record<string, unknown> } }
+      const data = e.response?.data
+      if (data && typeof data === 'object') {
+        const msgs = Object.entries(data)
+          .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : String(v)}`)
+          .join(' · ')
+        setEditarError(msgs)
+      } else {
+        setEditarError('Error al actualizar usuario.')
+      }
+    } finally { setEditarLoading(false) }
   }
 
   const isSuperAdmin = authUser?.rol === 'SUPER_ADMIN'
@@ -255,14 +354,13 @@ export default function SecurityPage() {
       {/* Tabs */}
       <div className="flex gap-1 border-b border-gray-200 mb-4">
         {([
-          { key: 'usuarios',   label: '👤 Usuarios' },
+          { key: 'usuarios', label: '👤 Usuarios' },
           { key: 'hospitales', label: '🏥 Hospitales' },
-          { key: 'auditoria',  label: '🔍 Auditoría HIPAA' },
+          { key: 'auditoria', label: '🔍 Auditoría HIPAA' },
         ] as { key: Tab; label: string }[]).map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              tab === t.key ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}>
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${tab === t.key ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}>
             {t.label}
           </button>
         ))}
@@ -282,6 +380,14 @@ export default function SecurityPage() {
               {roles.map(r => <option key={r.rol_id} value={r.codigo}>{r.nombre}</option>)}
             </select>
             <span className="self-center text-sm text-gray-500">{usuTotal} usuario{usuTotal !== 1 ? 's' : ''}</span>
+            {isSuperAdmin && (
+              <button
+                onClick={() => { setFormCrear(FORM_CREAR_INIT); setCrearError(''); setShowCrear(true) }}
+                className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                <span className="text-lg leading-none">+</span> Nuevo Usuario
+              </button>
+            )}
           </div>
 
           {/* Table */}
@@ -341,6 +447,10 @@ export default function SecurityPage() {
                       {isSuperAdmin && (
                         <td className="px-4 py-3">
                           <div className="flex gap-2">
+                            <button onClick={() => openEditar(u.usr_id)}
+                              className="px-2 py-1 text-xs bg-amber-50 text-amber-700 rounded hover:bg-amber-100 font-medium">
+                              ✏ Editar
+                            </button>
                             {u.cuenta_bloqueada && (
                               <button onClick={() => handleDesbloquear(u.usr_id, u.username)}
                                 className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">
@@ -415,10 +525,10 @@ export default function SecurityPage() {
             <select value={audEvento} onChange={e => { setAudEvento(e.target.value); setAudPage(1) }}
               className="px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none">
               <option value="">Todos los eventos</option>
-              {['LOGIN_OK','LOGIN_FAIL','LOGOUT','PHI_ACCESS','PHI_CREATE','PHI_UPDATE',
-                'PHI_DELETE','PASSWORD_CHANGE','ACCOUNT_LOCKED','ADMIN_ACTION','EXPORT','TOKEN_REFRESH'].map(e => (
-                <option key={e} value={e}>{e.replace(/_/g, ' ')}</option>
-              ))}
+              {['LOGIN_OK', 'LOGIN_FAIL', 'LOGOUT', 'PHI_ACCESS', 'PHI_CREATE', 'PHI_UPDATE',
+                'PHI_DELETE', 'PASSWORD_CHANGE', 'ACCOUNT_LOCKED', 'ADMIN_ACTION', 'EXPORT', 'TOKEN_REFRESH'].map(e => (
+                  <option key={e} value={e}>{e.replace(/_/g, ' ')}</option>
+                ))}
             </select>
             <select value={audExitoso} onChange={e => { setAudExitoso(e.target.value); setAudPage(1) }}
               className="px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none">
@@ -501,6 +611,252 @@ export default function SecurityPage() {
                 </tbody>
               </table>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════ MODAL — Crear Usuario ══════════════ */}
+      {showCrear && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900">Crear Nuevo Usuario</h3>
+              <button onClick={() => setShowCrear(false)} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+            </div>
+            <form onSubmit={handleCrearUsuario} className="p-6 space-y-4">
+              {crearError && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">{crearError}</div>}
+
+              {/* Credenciales */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Usuario *</label>
+                  <input required value={formCrear.username}
+                    onChange={e => setFormCrear(f => ({ ...f, username: e.target.value }))}
+                    placeholder="nombre.apellido"
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña * <span className="text-xs text-gray-400">(mín. 10 chars)</span></label>
+                  <input required type="password" minLength={10} value={formCrear.password}
+                    onChange={e => setFormCrear(f => ({ ...f, password: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+
+              {/* Nombre completo */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Primer Nombre *</label>
+                  <input required value={formCrear.primer_nombre}
+                    onChange={e => setFormCrear(f => ({ ...f, primer_nombre: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Segundo Nombre</label>
+                  <input value={formCrear.segundo_nombre}
+                    onChange={e => setFormCrear(f => ({ ...f, segundo_nombre: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Primer Apellido *</label>
+                  <input required value={formCrear.primer_apellido}
+                    onChange={e => setFormCrear(f => ({ ...f, primer_apellido: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Segundo Apellido</label>
+                  <input value={formCrear.segundo_apellido}
+                    onChange={e => setFormCrear(f => ({ ...f, segundo_apellido: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+
+              {/* Contacto */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                  <input required type="email" value={formCrear.email}
+                    onChange={e => setFormCrear(f => ({ ...f, email: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                  <input value={formCrear.telefono}
+                    onChange={e => setFormCrear(f => ({ ...f, telefono: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+
+              {/* Rol y tipo profesional */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Rol *</label>
+                  <select required value={formCrear.rol_id}
+                    onChange={e => setFormCrear(f => ({ ...f, rol_id: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">— Seleccionar rol —</option>
+                    {roles.map(r => <option key={r.rol_id} value={r.rol_id}>{r.nombre}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tipo Personal *</label>
+                  <select required value={formCrear.tipo_personal}
+                    onChange={e => setFormCrear(f => ({ ...f, tipo_personal: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="MEDICO">Médico</option>
+                    <option value="ENFERMERO">Enfermero/a</option>
+                    <option value="FARMACEUTICO">Farmacéutico/a</option>
+                    <option value="LABORATORISTA">Laboratorista</option>
+                    <option value="BODEGUERO">Bodeguero/a</option>
+                    <option value="ADMINISTRATIVO">Administrativo</option>
+                    <option value="TECNICO">Técnico</option>
+                    <option value="OTRO">Otro</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Profesional */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Especialidad</label>
+                  <input value={formCrear.especialidad}
+                    onChange={e => setFormCrear(f => ({ ...f, especialidad: e.target.value }))}
+                    placeholder="Ej: Cardiología"
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">No. Colegiado</label>
+                  <input value={formCrear.no_colegiado}
+                    onChange={e => setFormCrear(f => ({ ...f, no_colegiado: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => setShowCrear(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg">Cancelar</button>
+                <button type="submit" disabled={crearLoading}
+                  className="px-5 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50">
+                  {crearLoading ? 'Creando...' : 'Crear Usuario'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════ MODAL — Editar Usuario ══════════════ */}
+      {showEditar && editUser && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Editar Usuario</h3>
+                <p className="text-xs text-gray-500">@{editUser.username} · ID: {editUser.usr_id}</p>
+              </div>
+              <button onClick={() => { setShowEditar(false); setEditUser(null) }} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+            </div>
+            <form onSubmit={handleEditarUsuario} className="p-6 space-y-4">
+              {editarError && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">{editarError}</div>}
+
+              {/* Nombre completo */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Primer Nombre *</label>
+                  <input required value={formEditar.primer_nombre}
+                    onChange={e => setFormEditar(f => ({ ...f, primer_nombre: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Segundo Nombre</label>
+                  <input value={formEditar.segundo_nombre}
+                    onChange={e => setFormEditar(f => ({ ...f, segundo_nombre: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Primer Apellido *</label>
+                  <input required value={formEditar.primer_apellido}
+                    onChange={e => setFormEditar(f => ({ ...f, primer_apellido: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Segundo Apellido</label>
+                  <input value={formEditar.segundo_apellido}
+                    onChange={e => setFormEditar(f => ({ ...f, segundo_apellido: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+
+              {/* Contacto */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                  <input required type="email" value={formEditar.email}
+                    onChange={e => setFormEditar(f => ({ ...f, email: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                  <input value={formEditar.telefono}
+                    onChange={e => setFormEditar(f => ({ ...f, telefono: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+
+              {/* Rol y tipo profesional */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Rol *</label>
+                  <select required value={formEditar.rol_id}
+                    onChange={e => setFormEditar(f => ({ ...f, rol_id: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">— Seleccionar rol —</option>
+                    {roles.map(r => <option key={r.rol_id} value={r.rol_id}>{r.nombre}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tipo Personal</label>
+                  <select value={formEditar.tipo_personal}
+                    onChange={e => setFormEditar(f => ({ ...f, tipo_personal: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="MEDICO">Médico</option>
+                    <option value="ENFERMERO">Enfermero/a</option>
+                    <option value="FARMACEUTICO">Farmacéutico/a</option>
+                    <option value="LABORATORISTA">Laboratorista</option>
+                    <option value="BODEGUERO">Bodeguero/a</option>
+                    <option value="ADMINISTRATIVO">Administrativo</option>
+                    <option value="TECNICO">Técnico</option>
+                    <option value="OTRO">Otro</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Profesional */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Especialidad</label>
+                  <input value={formEditar.especialidad}
+                    onChange={e => setFormEditar(f => ({ ...f, especialidad: e.target.value }))}
+                    placeholder="Ej: Cardiología"
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">No. Colegiado</label>
+                  <input value={formEditar.no_colegiado}
+                    onChange={e => setFormEditar(f => ({ ...f, no_colegiado: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => { setShowEditar(false); setEditUser(null) }}
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg">Cancelar</button>
+                <button type="submit" disabled={editarLoading}
+                  className="px-5 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50">
+                  {editarLoading ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
