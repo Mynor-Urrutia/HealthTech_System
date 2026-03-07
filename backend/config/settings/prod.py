@@ -23,9 +23,6 @@ DATABASES = {
         'PASSWORD': config('ORACLE_PASSWORD'),
         'HOST': '',    # Vacío: usa tnsnames.ora
         'PORT': '',
-        'OPTIONS': {
-            'use_oracledb': True,
-        },
         'CONN_MAX_AGE': 300,
     },
     # Servicio REPORTS — Consultas pesadas en nodo 2
@@ -36,9 +33,6 @@ DATABASES = {
         'PASSWORD': config('ORACLE_PASSWORD'),
         'HOST': '',
         'PORT': '',
-        'OPTIONS': {
-            'use_oracledb': True,
-        },
         'CONN_MAX_AGE': 300,
     },
 }
