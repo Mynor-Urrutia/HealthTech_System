@@ -18,17 +18,17 @@ DATABASES = {
     # Servicio OLTP — Escrituras y lecturas transaccionales
     'default': {
         'ENGINE': 'django.db.backends.oracle',
-        'NAME': config('ORACLE_DSN', default=config('ORACLE_OLTP_SERVICE', default='')),     # Acepta DSN completo de RAC o alias TNS
+        'NAME': config('ORACLE_DSN', default=''),
         'USER': config('ORACLE_USER'),
         'PASSWORD': config('ORACLE_PASSWORD'),
-        'HOST': '',    # Vacío: usa tnsnames.ora
+        'HOST': '',
         'PORT': '',
         'CONN_MAX_AGE': 300,
     },
-    # Servicio REPORTS — Consultas pesadas en nodo 2
+    # Servicio REPORTS — Consultas pesadas (usa el mismo DSN si no se define uno separado)
     'reports': {
         'ENGINE': 'django.db.backends.oracle',
-        'NAME': config('ORACLE_DSN_REPORTS', default=config('ORACLE_REPORTS_SERVICE', default='')),  # Acepta DSN completo o alias TNS
+        'NAME': config('ORACLE_DSN_REPORTS', default=config('ORACLE_DSN', default='')),
         'USER': config('ORACLE_USER'),
         'PASSWORD': config('ORACLE_PASSWORD'),
         'HOST': '',
@@ -50,14 +50,15 @@ CORS_ALLOWED_ORIGINS = config(
 CORS_ALLOW_CREDENTIALS = True
 
 # ============================================================
-# Seguridad HTTPS estricta (HIPAA — TLS 1.3)
+# Seguridad HTTPS (HIPAA — TLS 1.3)
+# Activar SECURE_SSL_REDIRECT=True en .env una vez que tengas SSL configurado
 # ============================================================
-SECURE_SSL_REDIRECT = True
-SECURE_HSTS_SECONDS = 31536000
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool)
+SECURE_HSTS_SECONDS = 31536000 if SECURE_SSL_REDIRECT else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_SSL_REDIRECT
+SECURE_HSTS_PRELOAD = SECURE_SSL_REDIRECT
+SESSION_COOKIE_SECURE = SECURE_SSL_REDIRECT
+CSRF_COOKIE_SECURE = SECURE_SSL_REDIRECT
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
