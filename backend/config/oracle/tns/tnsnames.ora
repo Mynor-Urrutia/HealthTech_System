@@ -1,0 +1,60 @@
+# ============================================================
+# HealthTech Solutions — tnsnames.ora
+# Oracle 19c RAC — 2 nodos sobre VMware (10.0.0.x/24)
+# ============================================================
+# IMPORTANTE: Reemplazar IPs con las reales del entorno RAC
+# SCAN_HOST = Single Client Access Name del clúster
+
+# ----------------------------------------------------------
+# Servicio OLTP — Operaciones transaccionales (ambos nodos)
+# Failover automático si un nodo cae
+# ----------------------------------------------------------
+HEALTHTECH_OLTP =
+  (DESCRIPTION =
+    (CONNECT_TIMEOUT = 10)
+    (RETRY_COUNT = 3)
+    (RETRY_DELAY = 3)
+    (FAILOVER = ON)
+    (LOAD_BALANCE = ON)
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL=TCP)(HOST=10.0.0.SCAN_IP)(PORT=1521))
+    )
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = HEALTHTECH_OLTP)
+    )
+  )
+
+# ----------------------------------------------------------
+# Servicio REPORTS — Consultas pesadas (preferencia Nodo 2)
+# ----------------------------------------------------------
+HEALTHTECH_REPORTS =
+  (DESCRIPTION =
+    (CONNECT_TIMEOUT = 30)
+    (FAILOVER = ON)
+    (LOAD_BALANCE = OFF)
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL=TCP)(HOST=10.0.0.NODO2_IP)(PORT=1521))
+      (ADDRESS = (PROTOCOL=TCP)(HOST=10.0.0.NODO1_IP)(PORT=1521))
+    )
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = HEALTHTECH_REPORTS)
+    )
+  )
+
+# ----------------------------------------------------------
+# Servicio DR — Oracle Standby en AWS (via VPN)
+# Solo para lectura en caso de failover total
+# ----------------------------------------------------------
+HEALTHTECH_DR =
+  (DESCRIPTION =
+    (CONNECT_TIMEOUT = 30)
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL=TCP)(HOST=AWS_ORACLE_HOST)(PORT=1521))
+    )
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = HEALTHTECH_DR)
+    )
+  )

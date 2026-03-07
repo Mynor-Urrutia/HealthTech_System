@@ -1,0 +1,107 @@
+-- ============================================================
+-- HealthTech Solutions — DDL: SEC_USUARIOS, SEC_USUARIOS_ROLES
+-- Tabla PHI — protegida con VPD por HOSPITAL_ID
+-- Tablespace PHI_DATA (TDE en producción)
+-- Compatible: Oracle 19c RAC y Oracle 21c XE
+-- ============================================================
+
+-- ---- 1. SEC_USUARIOS ----
+BEGIN
+  EXECUTE IMMEDIATE '
+    CREATE TABLE SEC_USUARIOS (
+      USR_ID              NUMBER          DEFAULT SEQ_SEC_USUARIOS.NEXTVAL
+                                          CONSTRAINT PK_SEC_USUARIOS PRIMARY KEY,
+      HOSPITAL_ID         NUMBER          NOT NULL,     -- VPD column
+      ROL_ID              NUMBER          NOT NULL,
+      -- Credenciales
+      USERNAME            VARCHAR2(50)    NOT NULL,
+      PASSWORD_HASH       VARCHAR2(256)   NOT NULL,     -- bcrypt/PBKDF2
+      -- Datos personales (PHI — tablespace cifrado en PROD)
+      PRIMER_NOMBRE       VARCHAR2(100)   NOT NULL,
+      SEGUNDO_NOMBRE      VARCHAR2(100),
+      PRIMER_APELLIDO     VARCHAR2(100)   NOT NULL,
+      SEGUNDO_APELLIDO    VARCHAR2(100),
+      EMAIL               VARCHAR2(150)   NOT NULL,
+      TELEFONO            VARCHAR2(20),
+      -- Tipo de personal
+      TIPO_PERSONAL       VARCHAR2(30)    NOT NULL,     -- MEDICO, ENFERMERO, etc.
+      ESPECIALIDAD        VARCHAR2(100),                -- Si aplica
+      NO_COLEGIADO        VARCHAR2(30),                 -- Número de colegiado médico
+      FOTO_S3_KEY         VARCHAR2(500),                -- Avatar en S3
+      -- Estado de cuenta
+      ACTIVO              NUMBER(1)       DEFAULT 1     NOT NULL,
+      CUENTA_BLOQUEADA    NUMBER(1)       DEFAULT 0     NOT NULL,
+      INTENTOS_FALLIDOS   NUMBER(2)       DEFAULT 0     NOT NULL,
+      DEBE_CAMBIAR_PASS   NUMBER(1)       DEFAULT 0     NOT NULL,
+      ULTIMO_LOGIN        TIMESTAMP,
+      PASS_CAMBIADO_EN    TIMESTAMP       DEFAULT SYSTIMESTAMP NOT NULL,
+      -- Auditoría
+      CREATED_BY          NUMBER,
+      CREATED_AT          TIMESTAMP       DEFAULT SYSTIMESTAMP NOT NULL,
+      UPDATED_BY          NUMBER,
+      UPDATED_AT          TIMESTAMP       DEFAULT SYSTIMESTAMP NOT NULL,
+      IS_ACTIVE           NUMBER(1)       DEFAULT 1     NOT NULL,
+      -- Constraints
+      CONSTRAINT UK_SEC_USR_USERNAME  UNIQUE (USERNAME),
+      CONSTRAINT UK_SEC_USR_EMAIL     UNIQUE (EMAIL, HOSPITAL_ID),
+      CONSTRAINT CHK_SEC_USR_ACTIVO   CHECK (ACTIVO IN (0, 1)),
+      CONSTRAINT CHK_SEC_USR_BLOQ     CHECK (CUENTA_BLOQUEADA IN (0, 1)),
+      CONSTRAINT CHK_SEC_USR_DCPASS   CHECK (DEBE_CAMBIAR_PASS IN (0, 1)),
+      CONSTRAINT CHK_SEC_USR_ISACT    CHECK (IS_ACTIVE IN (0, 1)),
+      CONSTRAINT CHK_SEC_USR_TIPO     CHECK (
+        TIPO_PERSONAL IN (
+          ''MEDICO'', ''ENFERMERO'', ''FARMACEUTICO'',
+          ''LABORATORISTA'', ''ADMINISTRATIVO'', ''BODEGUERO'',
+          ''AUDITOR'', ''PROVEEDOR'', ''PACIENTE'', ''OTRO''
+        )
+      ),
+      -- FKs
+      CONSTRAINT FK_USR_HOSPITAL FOREIGN KEY (HOSPITAL_ID)
+        REFERENCES SEC_HOSPITALES (HOSPITAL_ID),
+      CONSTRAINT FK_USR_ROL      FOREIGN KEY (ROL_ID)
+        REFERENCES SEC_ROLES (ROL_ID)
+    ) TABLESPACE PHI_DATA';    -- PHI_DATA: cifrado con TDE en PROD
+EXCEPTION
+  WHEN OTHERS THEN
+    IF SQLCODE = -955 THEN
+      DBMS_OUTPUT.PUT_LINE('Tabla SEC_USUARIOS ya existe — omitiendo.');
+    ELSE RAISE;
+    END IF;
+END;
+/
+
+-- Índices de búsqueda frecuente
+BEGIN
+  EXECUTE IMMEDIATE
+    'CREATE INDEX IDX_SEC_USR_HOSPITAL ON SEC_USUARIOS (HOSPITAL_ID) TABLESPACE PHI_DATA';
+EXCEPTION
+  WHEN OTHERS THEN IF SQLCODE = -955 THEN NULL; ELSE RAISE; END IF;
+END;
+/
+
+BEGIN
+  EXECUTE IMMEDIATE
+    'CREATE INDEX IDX_SEC_USR_ROL ON SEC_USUARIOS (ROL_ID) TABLESPACE PHI_DATA';
+EXCEPTION
+  WHEN OTHERS THEN IF SQLCODE = -955 THEN NULL; ELSE RAISE; END IF;
+END;
+/
+
+BEGIN
+  EXECUTE IMMEDIATE
+    'CREATE INDEX IDX_SEC_USR_TIPO ON SEC_USUARIOS (TIPO_PERSONAL) TABLESPACE PHI_DATA';
+EXCEPTION
+  WHEN OTHERS THEN IF SQLCODE = -955 THEN NULL; ELSE RAISE; END IF;
+END;
+/
+
+-- Trigger UPDATED_AT
+CREATE OR REPLACE TRIGGER TRG_SEC_USUARIOS_UPD
+  BEFORE UPDATE ON SEC_USUARIOS
+  FOR EACH ROW
+BEGIN
+  :NEW.UPDATED_AT := SYSTIMESTAMP;
+END;
+/
+
+PROMPT ✅ Tabla SEC_USUARIOS creada en tablespace PHI_DATA.

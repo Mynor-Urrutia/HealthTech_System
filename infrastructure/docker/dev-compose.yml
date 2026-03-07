@@ -1,0 +1,58 @@
+# ============================================================
+# HealthTech Solutions — Docker Compose DEV
+# Oracle 21c XE ya está instalado localmente (NO en Docker)
+# Este compose levanta solo: Django backend + React frontend
+# ============================================================
+
+version: '3.9'
+
+services:
+
+  # ---- Backend Django ----
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: ../infrastructure/docker/Dockerfile.backend
+    container_name: healthtech_backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ../../backend:/app
+      - backend_logs:/app/logs
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_ENV=dev
+      - DJANGO_SETTINGS_MODULE=config.settings.dev
+    env_file:
+      - ../../.env.dev
+    extra_hosts:
+      # Permite al contenedor llegar al Oracle XE del host
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # ---- Frontend React ----
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: ../infrastructure/docker/Dockerfile.frontend
+    container_name: healthtech_frontend
+    volumes:
+      - ../../frontend:/app
+      - /app/node_modules           # Evitar sobreescribir node_modules del host
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000/api/v1
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  backend_logs:

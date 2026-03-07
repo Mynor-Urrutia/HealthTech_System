@@ -1,0 +1,89 @@
+# ============================================================
+# HealthTech Solutions — RMAN Backup Strategy
+# Oracle 19c RAC — Backups hacia Proxmox local + AWS S3
+# RPO: 30 min (archive logs) | RTO: 2 horas
+# ============================================================
+
+# ---- Conectar al catálogo RMAN ----
+# RMAN TARGET / CATALOG rman_user/password@rman_catalog
+
+# ---- Configuración global del canal ----
+CONFIGURE DEFAULT DEVICE TYPE TO DISK;
+CONFIGURE DEVICE TYPE DISK PARALLELISM 2 BACKUP TYPE TO BACKUPSET;
+CONFIGURE BACKUP OPTIMIZATION ON;
+CONFIGURE CONTROLFILE AUTOBACKUP ON;
+CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '/backup/rman/cf_%F';
+CONFIGURE RETENTION POLICY TO RECOVERY WINDOW OF 7 DAYS;
+
+# ============================================================
+# BACKUP FULL — Domingos 02:00 (via cron)
+# ============================================================
+RUN {
+  ALLOCATE CHANNEL ch1 TYPE DISK FORMAT '/backup/rman/full_%U';
+  ALLOCATE CHANNEL ch2 TYPE DISK FORMAT '/backup/rman/full_%U';
+
+  # Full backup de la base de datos
+  BACKUP DATABASE
+    TAG 'FULL_WEEKLY'
+    FILESPERSET 4;
+
+  # Backup de archive logs generados durante el backup
+  BACKUP ARCHIVELOG ALL
+    TAG 'ARCH_WITH_FULL'
+    DELETE INPUT;
+
+  # Backup del SPFILE y controlfile
+  BACKUP SPFILE;
+  BACKUP CURRENT CONTROLFILE;
+
+  RELEASE CHANNEL ch1;
+  RELEASE CHANNEL ch2;
+
+  # Eliminar backups más antiguos que la política de retención
+  DELETE NOPROMPT OBSOLETE;
+}
+
+# ============================================================
+# BACKUP INCREMENTAL — Lunes a Sábado 02:00 (via cron)
+# ============================================================
+RUN {
+  ALLOCATE CHANNEL ch1 TYPE DISK FORMAT '/backup/rman/incr_%U';
+
+  BACKUP INCREMENTAL LEVEL 1 CUMULATIVE
+    DATABASE
+    TAG 'INCR_DAILY';
+
+  BACKUP ARCHIVELOG ALL
+    TAG 'ARCH_WITH_INCR'
+    DELETE INPUT;
+
+  RELEASE CHANNEL ch1;
+}
+
+# ============================================================
+# BACKUP ARCHIVE LOGS — Cada 30 minutos (cron job)
+# Cumple RPO de 30 minutos para HIPAA
+# ============================================================
+RUN {
+  ALLOCATE CHANNEL ch1 TYPE DISK FORMAT '/backup/rman/arch_%U';
+
+  BACKUP ARCHIVELOG
+    FROM TIME 'SYSDATE-1/48'   # Últimos 30 minutos
+    TAG 'ARCH_30MIN'
+    NOT BACKED UP 1 TIMES;
+
+  RELEASE CHANNEL ch1;
+}
+
+# ============================================================
+# TRANSFERENCIA A AWS S3 — Post-backup (script shell)
+# aws s3 sync /backup/rman/ s3://healthtech-backup-prod/rman/ --sse AES256
+# ============================================================
+
+# ============================================================
+# RESTORE TEST — Mensual (verificar integridad del backup)
+# ============================================================
+RUN {
+  RESTORE DATABASE VALIDATE;
+  RESTORE ARCHIVELOG ALL VALIDATE;
+}

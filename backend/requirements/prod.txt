@@ -1,0 +1,11 @@
+# ============================================================
+# Dependencias exclusivas para PROD (Oracle 19c RAC)
+# ============================================================
+-r base.txt
+
+# Servidor de producción
+gunicorn==23.0.0
+gunicorn[geventlet]==23.0.0
+
+# Monitoreo
+sentry-sdk==2.13.0

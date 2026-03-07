@@ -1,0 +1,39 @@
+# ============================================================
+# HealthTech Solutions — sqlnet.ora
+# Configuración de red Oracle — Seguridad TLS 1.3 (HIPAA)
+# ============================================================
+
+# Directorio de wallet para credenciales Oracle
+WALLET_LOCATION =
+  (SOURCE =
+    (METHOD = FILE)
+    (METHOD_DATA =
+      (DIRECTORY = /opt/oracle/wallet)
+    )
+  )
+
+# Autenticación automática con wallet
+SQLNET.WALLET_OVERRIDE = TRUE
+
+# ---- Encriptación de red (en tránsito) ----
+SQLNET.ENCRYPTION_SERVER = REQUIRED
+SQLNET.ENCRYPTION_CLIENT = REQUIRED
+SQLNET.ENCRYPTION_TYPES_SERVER = (AES256)
+SQLNET.ENCRYPTION_TYPES_CLIENT = (AES256)
+
+# ---- Integridad de datos ----
+SQLNET.CRYPTO_CHECKSUM_SERVER = REQUIRED
+SQLNET.CRYPTO_CHECKSUM_CLIENT = REQUIRED
+SQLNET.CRYPTO_CHECKSUM_TYPES_SERVER = (SHA256)
+SQLNET.CRYPTO_CHECKSUM_TYPES_CLIENT = (SHA256)
+
+# ---- Timeouts ----
+SQLNET.INBOUND_CONNECT_TIMEOUT = 60
+SQLNET.SEND_TIMEOUT = 10
+SQLNET.RECV_TIMEOUT = 10
+
+# ---- Resolución de nombres ----
+NAMES.DIRECTORY_PATH = (TNSNAMES, EZCONNECT)
+
+# ---- Logging ----
+DIAG_ADR_ENABLED = ON

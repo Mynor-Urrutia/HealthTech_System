@@ -1,0 +1,90 @@
+-- =============================================================
+-- HealthTech Solutions — Sequences: Módulo Pacientes (M02)
+-- Compatible: Oracle 19c RAC + Oracle 21c XE
+-- Convención RAC: CACHE 50 NOORDER NOCYCLE
+-- =============================================================
+
+-- Pacientes
+BEGIN
+  EXECUTE IMMEDIATE '
+    CREATE SEQUENCE SEQ_PAC_PACIENTES
+      START WITH 1
+      INCREMENT BY 1
+      NOCACHE
+      NOMAXVALUE
+      NOCYCLE
+      NOORDER
+  ';
+EXCEPTION
+  WHEN OTHERS THEN
+    IF SQLCODE = -955 THEN NULL; ELSE RAISE; END IF;
+END;
+/
+
+-- Alergias
+BEGIN
+  EXECUTE IMMEDIATE '
+    CREATE SEQUENCE SEQ_PAC_ALERGIAS
+      START WITH 1
+      INCREMENT BY 1
+      CACHE 50
+      NOMAXVALUE
+      NOCYCLE
+      NOORDER
+  ';
+EXCEPTION
+  WHEN OTHERS THEN
+    IF SQLCODE = -955 THEN NULL; ELSE RAISE; END IF;
+END;
+/
+
+-- Contactos de emergencia
+BEGIN
+  EXECUTE IMMEDIATE '
+    CREATE SEQUENCE SEQ_PAC_CONTACTOS
+      START WITH 1
+      INCREMENT BY 1
+      CACHE 50
+      NOMAXVALUE
+      NOCYCLE
+      NOORDER
+  ';
+EXCEPTION
+  WHEN OTHERS THEN
+    IF SQLCODE = -955 THEN NULL; ELSE RAISE; END IF;
+END;
+/
+
+-- Historial clínico
+BEGIN
+  EXECUTE IMMEDIATE '
+    CREATE SEQUENCE SEQ_PAC_HISTORIAL
+      START WITH 1
+      INCREMENT BY 1
+      CACHE 50
+      NOMAXVALUE
+      NOCYCLE
+      NOORDER
+  ';
+EXCEPTION
+  WHEN OTHERS THEN
+    IF SQLCODE = -955 THEN NULL; ELSE RAISE; END IF;
+END;
+/
+
+-- Documentos de paciente
+BEGIN
+  EXECUTE IMMEDIATE '
+    CREATE SEQUENCE SEQ_PAC_DOCUMENTOS
+      START WITH 1
+      INCREMENT BY 1
+      CACHE 50
+      NOMAXVALUE
+      NOCYCLE
+      NOORDER
+  ';
+EXCEPTION
+  WHEN OTHERS THEN
+    IF SQLCODE = -955 THEN NULL; ELSE RAISE; END IF;
+END;
+/

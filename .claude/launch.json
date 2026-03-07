@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Backend — Django API",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["backend/manage.py", "runserver", "0.0.0.0:8000"],
+      "port": 8000
+    },
+    {
+      "name": "Frontend — Vite / React",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["frontend/node_modules/vite/bin/vite.js", "frontend", "--host", "--port", "5173"],
+      "port": 5173
+    }
+  ]
+}
