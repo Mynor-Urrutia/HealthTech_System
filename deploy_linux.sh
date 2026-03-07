@@ -8,11 +8,13 @@
 # 
 # Ejecución: sudo bash deploy_linux.sh
 # ==============================================================================
+set -e # Detener el script si hay un error crítico
 
-# Variables de Configuración (Modificar según tu entorno)
+# Variables de Configuración
 PROJECT_NAME="healthtech"
 PROJECT_DIR="/var/www/$PROJECT_NAME"
-USER="ubuntu"  # Usuario no-root del servidor
+# Detectar el usuario real que invocó sudo (o usar el actual si no hay sudo)
+USER=${SUDO_USER:-$(whoami)}
 DOMAIN_NAME="tu-dominio.com" # O la IP pública del servidor
 PYTHON_VERSION="3.12"
 NODE_VERSION="20"
