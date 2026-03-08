@@ -127,6 +127,7 @@ export default function SecurityPage() {
     username: '', password: '', primer_nombre: '', segundo_nombre: '',
     primer_apellido: '', segundo_apellido: '', email: '', telefono: '',
     tipo_personal: 'MEDICO', especialidad: '', no_colegiado: '', rol_id: '',
+    hospital_id: '',
   }
   const [showCrear, setShowCrear] = useState(false)
   const [formCrear, setFormCrear] = useState(FORM_CREAR_INIT)
@@ -139,6 +140,7 @@ export default function SecurityPage() {
   const [formEditar, setFormEditar] = useState({
     primer_nombre: '', segundo_nombre: '', primer_apellido: '', segundo_apellido: '',
     email: '', telefono: '', tipo_personal: '', especialidad: '', no_colegiado: '', rol_id: '',
+    hospital_id: '',
   })
   const [editarLoading, setEditarLoading] = useState(false)
   const [editarError, setEditarError] = useState('')
@@ -215,9 +217,8 @@ export default function SecurityPage() {
     }
   }
 
-  useEffect(() => { fetchRoles() }, []) // eslint-disable-line
+  useEffect(() => { fetchRoles(); fetchHospitales() }, []) // eslint-disable-line
   useEffect(() => { if (tab === 'usuarios') fetchUsuarios() }, [tab, usuSearch, usuRolFilter]) // eslint-disable-line
-  useEffect(() => { if (tab === 'hospitales') fetchHospitales() }, [tab]) // eslint-disable-line
   useEffect(() => { if (tab === 'auditoria') fetchAuditoria() }, [tab, audPage, audEvento, audExitoso, audFechaDesde, audFechaHasta]) // eslint-disable-line
 
   // ── Debounce search ──
@@ -253,6 +254,7 @@ export default function SecurityPage() {
       await api.post('/auth/usuarios/', {
         ...formCrear,
         rol_id: parseInt(formCrear.rol_id),
+        hospital_id: formCrear.hospital_id ? parseInt(formCrear.hospital_id) : undefined,
       })
       setShowCrear(false)
       setFormCrear(FORM_CREAR_INIT)
@@ -290,6 +292,7 @@ export default function SecurityPage() {
         especialidad: u.especialidad || '',
         no_colegiado: u.no_colegiado || '',
         rol_id: String(u.rol?.rol_id || ''),
+        hospital_id: String(u.hospital_id || ''),
       })
       setShowEditar(true)
     } catch { setActionErr('Error al cargar datos del usuario.') }
@@ -304,6 +307,7 @@ export default function SecurityPage() {
       await api.patch(`/auth/usuarios/${editUser.usr_id}/`, {
         ...formEditar,
         rol_id: parseInt(formEditar.rol_id),
+        hospital_id: formEditar.hospital_id ? parseInt(formEditar.hospital_id) : undefined,
       })
       setShowEditar(false)
       setEditUser(null)
@@ -687,8 +691,8 @@ export default function SecurityPage() {
                 </div>
               </div>
 
-              {/* Rol y tipo profesional */}
-              <div className="grid grid-cols-2 gap-3">
+              {/* Rol, hospital y tipo profesional */}
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Rol *</label>
                   <select required value={formCrear.rol_id}
@@ -696,6 +700,15 @@ export default function SecurityPage() {
                     className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">— Seleccionar rol —</option>
                     {roles.map(r => <option key={r.rol_id} value={r.rol_id}>{r.nombre}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Hospital *</label>
+                  <select required value={formCrear.hospital_id}
+                    onChange={e => setFormCrear(f => ({ ...f, hospital_id: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">— Seleccionar hospital —</option>
+                    {hospitales.map(h => <option key={h.hospital_id} value={h.hospital_id}>{h.nombre}</option>)}
                   </select>
                 </div>
                 <div>
@@ -803,8 +816,8 @@ export default function SecurityPage() {
                 </div>
               </div>
 
-              {/* Rol y tipo profesional */}
-              <div className="grid grid-cols-2 gap-3">
+              {/* Rol, hospital y tipo profesional */}
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Rol *</label>
                   <select required value={formEditar.rol_id}
@@ -812,6 +825,15 @@ export default function SecurityPage() {
                     className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">— Seleccionar rol —</option>
                     {roles.map(r => <option key={r.rol_id} value={r.rol_id}>{r.nombre}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Hospital *</label>
+                  <select required value={formEditar.hospital_id}
+                    onChange={e => setFormEditar(f => ({ ...f, hospital_id: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">— Seleccionar hospital —</option>
+                    {hospitales.map(h => <option key={h.hospital_id} value={h.hospital_id}>{h.nombre}</option>)}
                   </select>
                 </div>
                 <div>

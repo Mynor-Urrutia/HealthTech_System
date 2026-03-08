@@ -74,6 +74,10 @@ class UsuarioDetailSerializer(serializers.ModelSerializer):
         queryset=Rol.objects.filter(activo=True),
         source='rol', write_only=True,
     )
+    hospital_id  = serializers.PrimaryKeyRelatedField(
+        queryset=Hospital.objects.filter(activo=True),
+        source='hospital', write_only=True, required=False,
+    )
     hospital_nombre = serializers.CharField(source='hospital.nombre_corto', read_only=True)
     full_name    = serializers.SerializerMethodField()
 
@@ -85,11 +89,10 @@ class UsuarioDetailSerializer(serializers.ModelSerializer):
             'primer_apellido', 'segundo_apellido',
             'email', 'telefono', 'tipo_personal',
             'especialidad', 'no_colegiado',
-            'rol', 'rol_id', 'hospital_nombre',
+            'rol', 'rol_id', 'hospital_id', 'hospital_nombre',
             'activo', 'cuenta_bloqueada',
             'debe_cambiar_pass', 'ultimo_login',
             'created_at', 'updated_at',
-            # hospital_id NO se expone — lo maneja backend + VPD
         ]
         read_only_fields = [
             'usr_id', 'username', 'hospital_nombre',
@@ -108,6 +111,10 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
         queryset=Rol.objects.filter(activo=True),
         source='rol',
     )
+    hospital_id = serializers.PrimaryKeyRelatedField(
+        queryset=Hospital.objects.filter(activo=True),
+        source='hospital', required=False,
+    )
 
     class Meta:
         model  = Usuario
@@ -117,6 +124,7 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
             'primer_apellido', 'segundo_apellido',
             'email', 'telefono', 'tipo_personal',
             'especialidad', 'no_colegiado', 'rol_id',
+            'hospital_id',
         ]
 
     def validate_password(self, value: str) -> str:
@@ -139,7 +147,7 @@ class UsuarioCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request    = self.context.get('request')
         password   = validated_data.pop('password')
-        hospital   = request.user.hospital
+        hospital   = validated_data.pop('hospital', None) or request.user.hospital
         created_by = request.user
 
         user = Usuario(
