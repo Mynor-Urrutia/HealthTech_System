@@ -25,7 +25,11 @@ interface Hospital {
   hospital_id: number
   codigo: string
   nombre: string
+  nombre_corto?: string
+  direccion?: string
+  telefono?: string
   email?: string
+  timezone?: string
   activo: boolean
 }
 
@@ -104,6 +108,18 @@ export default function SecurityPage() {
   // ── Hospitales ──
   const [hospitales, setHospitales] = useState<Hospital[]>([])
   const [hospLoading, setHospLoading] = useState(false)
+  const [selectedHosp, setSelectedHosp] = useState<Hospital | null>(null)
+
+  // ── Modal Crear/Editar Hospital ──
+  const FORM_HOSP_INIT = {
+    codigo: '', nombre: '', nombre_corto: '', direccion: '',
+    telefono: '', email: '', timezone: 'America/Guatemala',
+  }
+  const [showCrearHosp, setShowCrearHosp] = useState(false)
+  const [showEditarHosp, setShowEditarHosp] = useState(false)
+  const [formHosp, setFormHosp] = useState(FORM_HOSP_INIT)
+  const [hospFormLoading, setHospFormLoading] = useState(false)
+  const [hospFormError, setHospFormError] = useState('')
 
   // ── Auditoría ──
   const [auditoria, setAuditoria] = useState<AuditoriaItem[]>([])
@@ -477,35 +493,109 @@ export default function SecurityPage() {
         </div>
       )}
 
-      {/* ══════════════ HOSPITALES ══════════════ */}
+      {/* ════════════ HOSPITALES ════════════ */}
       {tab === 'hospitales' && (
-        <div className="flex-1 overflow-auto">
-          {hospLoading ? (
-            <div className="text-center py-16 text-gray-400 text-sm">Cargando...</div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {hospitales.length === 0 ? (
-                <p className="text-gray-400 text-sm col-span-full text-center py-10">Sin hospitales registrados</p>
-              ) : hospitales.map(h => (
-                <div key={h.hospital_id}
-                  className={`bg-white rounded-xl border p-4 ${h.activo ? 'border-gray-200' : 'border-gray-100 opacity-60'}`}>
-                  <div className="flex items-start justify-between gap-2 mb-3">
-                    <div>
-                      <p className="font-semibold text-gray-900">{h.nombre}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Código: {h.codigo}</p>
+        <div className="flex-1 flex flex-col gap-3 min-h-0">
+          {/* Header con botón crear */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-500">{hospitales.length} hospital{hospitales.length !== 1 ? 'es' : ''} registrado{hospitales.length !== 1 ? 's' : ''}</span>
+            {isSuperAdmin && (
+              <button
+                onClick={() => { setFormHosp(FORM_HOSP_INIT); setHospFormError(''); setShowCrearHosp(true) }}
+                className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                <span className="text-lg leading-none">+</span> Nuevo Hospital
+              </button>
+            )}
+          </div>
+
+          <div className="flex-1 overflow-auto flex gap-4">
+            {/* Grid de cards */}
+            <div className={`overflow-auto ${selectedHosp ? 'w-1/2' : 'w-full'}`}>
+              {hospLoading ? (
+                <div className="text-center py-16 text-gray-400 text-sm">Cargando...</div>
+              ) : (
+                <div className={`grid gap-4 ${selectedHosp ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
+                  {hospitales.length === 0 ? (
+                    <p className="text-gray-400 text-sm col-span-full text-center py-10">Sin hospitales registrados</p>
+                  ) : hospitales.map(h => (
+                    <div key={h.hospital_id}
+                      onClick={() => setSelectedHosp(selectedHosp?.hospital_id === h.hospital_id ? null : h)}
+                      className={`bg-white rounded-xl border p-4 cursor-pointer transition-all hover:shadow-md ${selectedHosp?.hospital_id === h.hospital_id
+                        ? 'border-blue-500 ring-2 ring-blue-100'
+                        : h.activo ? 'border-gray-200' : 'border-gray-100 opacity-60'
+                        }`}>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div>
+                          <p className="font-semibold text-gray-900">{h.nombre}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">Código: {h.codigo}</p>
+                        </div>
+                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full flex-shrink-0 ${h.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {h.activo ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </div>
+                      {h.email && <p className="text-xs text-gray-500">📧 {h.email}</p>}
                     </div>
-                    <span className={`px-2 py-0.5 text-xs font-medium rounded-full flex-shrink-0 ${h.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                      {h.activo ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </div>
-                  {h.email && (
-                    <p className="text-xs text-gray-500">📧 {h.email}</p>
-                  )}
-                  <p className="mt-2 text-xs text-gray-400">ID: {h.hospital_id}</p>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
+
+            {/* Panel de detalle */}
+            {selectedHosp && (
+              <div className="w-1/2 bg-white rounded-xl border border-gray-200 p-6 overflow-auto">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">{selectedHosp.nombre}</h3>
+                    <p className="text-sm text-gray-500">ID: {selectedHosp.hospital_id} · Código: {selectedHosp.codigo}</p>
+                  </div>
+                  <button onClick={() => setSelectedHosp(null)} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+                </div>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div><span className="font-medium text-gray-600">Nombre Corto:</span><p className="text-gray-900">{selectedHosp.nombre_corto || '—'}</p></div>
+                    <div><span className="font-medium text-gray-600">Estado:</span><p>{selectedHosp.activo ? <span className="text-green-600 font-medium">Activo</span> : <span className="text-gray-400">Inactivo</span>}</p></div>
+                    <div><span className="font-medium text-gray-600">Dirección:</span><p className="text-gray-900">{selectedHosp.direccion || '—'}</p></div>
+                    <div><span className="font-medium text-gray-600">Teléfono:</span><p className="text-gray-900">{selectedHosp.telefono || '—'}</p></div>
+                    <div><span className="font-medium text-gray-600">Email:</span><p className="text-gray-900">{selectedHosp.email || '—'}</p></div>
+                    <div><span className="font-medium text-gray-600">Zona Horaria:</span><p className="text-gray-900">{selectedHosp.timezone || '—'}</p></div>
+                  </div>
+                  {isSuperAdmin && (
+                    <div className="flex gap-2 pt-3 border-t border-gray-100">
+                      <button
+                        onClick={() => {
+                          setFormHosp({
+                            codigo: selectedHosp.codigo || '',
+                            nombre: selectedHosp.nombre || '',
+                            nombre_corto: selectedHosp.nombre_corto || '',
+                            direccion: selectedHosp.direccion || '',
+                            telefono: selectedHosp.telefono || '',
+                            email: selectedHosp.email || '',
+                            timezone: selectedHosp.timezone || 'America/Guatemala',
+                          })
+                          setHospFormError('')
+                          setShowEditarHosp(true)
+                        }}
+                        className="px-3 py-1.5 text-xs font-medium bg-amber-50 text-amber-700 rounded-lg hover:bg-amber-100"
+                      >✏ Editar</button>
+                      <button
+                        onClick={async () => {
+                          if (!confirm(`¿Desactivar el hospital "${selectedHosp.nombre}"?`)) return
+                          try {
+                            await api.delete(`/auth/hospitales/${selectedHosp.hospital_id}/`)
+                            setActionMsg(`Hospital "${selectedHosp.nombre}" desactivado.`)
+                            setSelectedHosp(null)
+                            fetchHospitales()
+                          } catch { setActionErr('Error al desactivar hospital.') }
+                        }}
+                        className="px-3 py-1.5 text-xs font-medium bg-red-50 text-red-700 rounded-lg hover:bg-red-100"
+                      >Desactivar</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -876,6 +966,195 @@ export default function SecurityPage() {
                 <button type="submit" disabled={editarLoading}
                   className="px-5 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50">
                   {editarLoading ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════ MODAL — Crear Hospital ══════════════ */}
+      {showCrearHosp && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900">Crear Nuevo Hospital</h3>
+              <button onClick={() => setShowCrearHosp(false)} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+            </div>
+            <form onSubmit={async (e) => {
+              e.preventDefault()
+              setHospFormLoading(true); setHospFormError('')
+              try {
+                await api.post('/auth/hospitales/', formHosp)
+                setShowCrearHosp(false)
+                setActionMsg('Hospital creado exitosamente.')
+                fetchHospitales()
+              } catch (err: unknown) {
+                const ex = err as { response?: { data?: Record<string, unknown> } }
+                const data = ex.response?.data
+                if (data && typeof data === 'object') {
+                  setHospFormError(Object.entries(data).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : String(v)}`).join(' · '))
+                } else { setHospFormError('Error al crear hospital.') }
+              } finally { setHospFormLoading(false) }
+            }} className="p-6 space-y-4">
+              {hospFormError && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">{hospFormError}</div>}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Código *</label>
+                  <input required value={formHosp.codigo}
+                    onChange={e => setFormHosp(f => ({ ...f, codigo: e.target.value }))}
+                    placeholder="HGS-01"
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Corto</label>
+                  <input value={formHosp.nombre_corto}
+                    onChange={e => setFormHosp(f => ({ ...f, nombre_corto: e.target.value }))}
+                    placeholder="HGS"
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Completo *</label>
+                <input required value={formHosp.nombre}
+                  onChange={e => setFormHosp(f => ({ ...f, nombre: e.target.value }))}
+                  placeholder="Hospital General San Juan de Dios"
+                  className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                <input value={formHosp.direccion}
+                  onChange={e => setFormHosp(f => ({ ...f, direccion: e.target.value }))}
+                  className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                  <input value={formHosp.telefono}
+                    onChange={e => setFormHosp(f => ({ ...f, telefono: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input type="email" value={formHosp.email}
+                    onChange={e => setFormHosp(f => ({ ...f, email: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Zona Horaria</label>
+                <select value={formHosp.timezone}
+                  onChange={e => setFormHosp(f => ({ ...f, timezone: e.target.value }))}
+                  className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="America/Guatemala">America/Guatemala</option>
+                  <option value="America/Mexico_City">America/Mexico_City</option>
+                  <option value="America/Bogota">America/Bogota</option>
+                  <option value="America/Lima">America/Lima</option>
+                  <option value="America/New_York">America/New_York</option>
+                  <option value="UTC">UTC</option>
+                </select>
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => setShowCrearHosp(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg">Cancelar</button>
+                <button type="submit" disabled={hospFormLoading}
+                  className="px-5 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50">
+                  {hospFormLoading ? 'Creando...' : 'Crear Hospital'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════ MODAL — Editar Hospital ══════════════ */}
+      {showEditarHosp && selectedHosp && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Editar Hospital</h3>
+                <p className="text-xs text-gray-500">ID: {selectedHosp.hospital_id}</p>
+              </div>
+              <button onClick={() => setShowEditarHosp(false)} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+            </div>
+            <form onSubmit={async (e) => {
+              e.preventDefault()
+              setHospFormLoading(true); setHospFormError('')
+              try {
+                const r = await api.put(`/auth/hospitales/${selectedHosp.hospital_id}/`, formHosp)
+                setShowEditarHosp(false)
+                setSelectedHosp(r.data)
+                setActionMsg('Hospital actualizado exitosamente.')
+                fetchHospitales()
+              } catch (err: unknown) {
+                const ex = err as { response?: { data?: Record<string, unknown> } }
+                const data = ex.response?.data
+                if (data && typeof data === 'object') {
+                  setHospFormError(Object.entries(data).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : String(v)}`).join(' · '))
+                } else { setHospFormError('Error al actualizar hospital.') }
+              } finally { setHospFormLoading(false) }
+            }} className="p-6 space-y-4">
+              {hospFormError && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">{hospFormError}</div>}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Código *</label>
+                  <input required value={formHosp.codigo}
+                    onChange={e => setFormHosp(f => ({ ...f, codigo: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Corto</label>
+                  <input value={formHosp.nombre_corto}
+                    onChange={e => setFormHosp(f => ({ ...f, nombre_corto: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Completo *</label>
+                <input required value={formHosp.nombre}
+                  onChange={e => setFormHosp(f => ({ ...f, nombre: e.target.value }))}
+                  className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                <input value={formHosp.direccion}
+                  onChange={e => setFormHosp(f => ({ ...f, direccion: e.target.value }))}
+                  className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                  <input value={formHosp.telefono}
+                    onChange={e => setFormHosp(f => ({ ...f, telefono: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input type="email" value={formHosp.email}
+                    onChange={e => setFormHosp(f => ({ ...f, email: e.target.value }))}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Zona Horaria</label>
+                <select value={formHosp.timezone}
+                  onChange={e => setFormHosp(f => ({ ...f, timezone: e.target.value }))}
+                  className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="America/Guatemala">America/Guatemala</option>
+                  <option value="America/Mexico_City">America/Mexico_City</option>
+                  <option value="America/Bogota">America/Bogota</option>
+                  <option value="America/Lima">America/Lima</option>
+                  <option value="America/New_York">America/New_York</option>
+                  <option value="UTC">UTC</option>
+                </select>
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => setShowEditarHosp(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg">Cancelar</button>
+                <button type="submit" disabled={hospFormLoading}
+                  className="px-5 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50">
+                  {hospFormLoading ? 'Guardando...' : 'Guardar Cambios'}
                 </button>
               </div>
             </form>
